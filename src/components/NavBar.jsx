@@ -20,7 +20,7 @@ const NavBar = () => {
             <h3>AI Garden</h3>
             </div>
             <div className="menu">
-            <Link className='link' to="/">History</Link>
+            <Link className='link' to="/">Home</Link>
             {user && <Link className='link' to={"/search"}>Search</Link>}
             {user? <div className='link'><div className='d-flex'><img className='logo' src={user.photoURL} alt={user.displayName} />
             <button onClick={logOut}>Sign Out</button>
