@@ -14,7 +14,7 @@ const PlantSearchForm = () => {
   const [user] = useAuthState(Auth);
   const plantRef = collection(db, "plants");
 
-  const API_KEY = "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"; // Replace with your actual API key
+  const API_KEY = process.env.REACT_APP_OPENAI_API_KEY;
 
   // Function to get the image path based on the metric name
   const getImageForMetric = (metric) => {
