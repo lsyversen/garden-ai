@@ -1,10 +1,6 @@
 import React from 'react';
-import { Auth } from '../firebase-config';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { CircularIndeterminate } from "../loadanimation";
 
 const LearnMore = () => {
-  const [user] = useAuthState(Auth);
 
   return (
     <section className="max-w-7xl mx-auto px-6 py-8">

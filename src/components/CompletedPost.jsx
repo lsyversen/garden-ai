@@ -14,8 +14,10 @@ const getImageForMetric = (metric) => {
     "Watering Rate": "/images/WateringRate.png",
     "Depth to Plant": "/images/DepthToPlant.png",
     "Sunlight Requirements": "/images/SunlightRequirements.png",
+    "Seed Spacing": "/images/SeedSpacing.png",
+    "Time to Plant": "/images/TimeToHarvestTwo.png",
   };
-  return metricToImageMap[metric] || "/images/default.png";
+  return metricToImageMap[metric] || "/images/logo.png";
 };
 
 const CompletedPost = ({ plantName, metrics }) => {

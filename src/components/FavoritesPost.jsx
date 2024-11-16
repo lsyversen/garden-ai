@@ -4,7 +4,7 @@ import { Auth, db } from '../firebase-config';
 import { doc, setDoc, getDocs, collection, query, where, deleteDoc } from 'firebase/firestore';
 import MetricPost from './MetricPost';
 import { FaHeart } from 'react-icons/fa';
-import toast, { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
  
 const getImageForMetric = (metric) => {
   const metricToImageMap = {
@@ -14,6 +14,8 @@ const getImageForMetric = (metric) => {
     "Watering Rate": "/images/WateringRate.png",
     "Depth to Plant": "/images/DepthToPlant.png",
     "Sunlight Requirements": "/images/SunlightRequirements.png",
+    "Seed Spacing": "/images/SeedSpacing.png",
+    "Time to Plant": "/images/TimeToHarvestTwo.png",
   };
   return metricToImageMap[metric] || "/images/default.png";
 };

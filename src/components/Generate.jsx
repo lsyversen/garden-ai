@@ -25,8 +25,10 @@ const PlantSearchForm = () => {
       "Watering Rate": "/images/WateringRate.png",
       "Depth to Plant": "/images/DepthToPlant.png",
       "Sunlight Requirements": "/images/SunlightRequirements.png",
+      "Seed Spacing": "/images/SeedSpacing.png",
+      "Time to Plant": "/images/TimeToHarvestTwo.png",
     };
-    return metricToImageMap[metric] || "/images/default.png"; // Use a default image if metric not found
+    return metricToImageMap[metric] || "/images/logo.png"; 
   };
 
   const handleSubmit = async (event) => {
