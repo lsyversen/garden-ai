@@ -14,7 +14,7 @@ const PlantSearchForm = () => {
   const [user] = useAuthState(Auth);
   const plantRef = collection(db, "plants");
 
-  const API_KEY = "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";
+  const API_KEY = "Paste API Key Here";
 
   // Function to get the image path based on the metric name
   const getImageForMetric = (metric) => {
@@ -34,14 +34,16 @@ const PlantSearchForm = () => {
     setLoading(true);
 
     const prompt = `
-      You are a plant care expert. Provide detailed information for the plant "${plantName}" in JSON format. Please follow the exact JSON structure specified below and do not include any additional text, explanations, or commentary—only the JSON.
+      You are a plant care expert. Assume you are always in Michigan. Provide detailed information for the plant "${plantName}" in JSON format. Please follow the exact JSON structure specified below and do not include any additional text, explanations, or commentary—only the JSON.
 
       Metric Descriptions:
       - Seed Germination Rate: Time in weeks or days.
       - Growing Zone: USDA Zone number.
       - Time to Harvest: Time in weeks or days.
+      - Time to Plant: Time in weeks or days.
       - Watering Rate: Frequency (e.g., "Weekly").
       - Depth to Plant: Depth in inches or cm.
+      - Seed Spacing: Depth in inches or cm.
       - Sunlight Requirements: Type (e.g., "Full sun").
 
       JSON format:
@@ -49,8 +51,10 @@ const PlantSearchForm = () => {
           "Seed Germination Rate": "Rate in weeks or days",
           "Growing Zone": "USDA Zone number",
           "Time to Harvest": "Time in weeks or days",
+          "Time to Plant": "Time in weeks or days",
           "Watering Rate": "Frequency",
           "Depth to Plant": "Depth in inches or cm",
+          "Seed Spacing": "Depth in inches or cm",
           "Sunlight Requirements": "Type"
       }
     `;

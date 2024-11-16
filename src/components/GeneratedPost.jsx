@@ -9,7 +9,6 @@ const GeneratedPost = ({ post }) => {
       <div className="content flex flex-col flex-grow">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-800">{prompt}</h2>
-          <span className="text-sm text-gray-500 lowercase">{user}</span>
         </div>
         <p className="response text-center text-gray-700 mt-2 bg-gray-100 rounded-lg p-2">
           {response}

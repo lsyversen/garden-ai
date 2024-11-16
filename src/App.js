@@ -4,6 +4,8 @@ import PlantSearchForm from './components/Generate'
 import Home from './components/Home'
 import Login from './components/Login'
 import Navbar from './components/NavBar'
+import LearnMore from './components/LearnMore'
+import Favorites from './components/Favorites'
 
 const App = () => {
   return (
@@ -14,6 +16,8 @@ const App = () => {
     <div className="container">
       <Routes>
           <Route path='/' element={<Home/>}/>
+          <Route path='/learn' element={<LearnMore/>}/>
+          <Route path='/favorites' element={<Favorites/>}/>
           <Route path='/login' element={<Login/>}/>
           <Route path="/search" element={<PlantSearchForm/>}/>
       </Routes>

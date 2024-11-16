@@ -5,7 +5,7 @@ import { doc, setDoc, getDocs, collection, query, where, deleteDoc } from 'fireb
 import MetricPost from './MetricPost';
 import { FaHeart } from 'react-icons/fa';
 import toast, { Toaster } from 'react-hot-toast';
-
+ 
 const getImageForMetric = (metric) => {
   const metricToImageMap = {
     "Seed Germination Rate": "/images/SeedGerminationRate.png",
@@ -18,7 +18,7 @@ const getImageForMetric = (metric) => {
   return metricToImageMap[metric] || "/images/default.png";
 };
 
-const CompletedPost = ({ plantName, metrics }) => {
+const FavoritesPost = ({ plantName, metrics, refetch }) => {
   const [user] = useAuthState(Auth);
   const [isFavorited, setIsFavorited] = useState(false);
   const hasMounted = useRef(false);
@@ -64,13 +64,10 @@ const CompletedPost = ({ plantName, metrics }) => {
           });
         }
         setIsFavorited(true);
-        toast.success(`${plantName} has been added to your favorites!`);
       } catch (error) {
         console.error("Error adding to favorites:", error);
-        toast.error("There was an error adding to favorites.");
       }
     } else {
-      toast('Please log in to add favorites.');
     }
   };
 
@@ -90,10 +87,9 @@ const CompletedPost = ({ plantName, metrics }) => {
         await Promise.all(deletePromises);
 
         setIsFavorited(false);
-        toast.success(`${plantName} has been removed from your favorites.`);
+        refetch()
       } catch (error) {
         console.error("Error removing from favorites:", error);
-        toast.error("There was an error removing from favorites.");
       }
     }
   };
@@ -122,14 +118,6 @@ const CompletedPost = ({ plantName, metrics }) => {
           >
             <FaHeart size={24} />
           </button>
-          <a
-            href={`https://www.google.com/search?q=buy+${encodeURIComponent(plantName)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="buy-now-button bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600"
-          >
-            Buy Now
-          </a>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
@@ -149,5 +137,4 @@ const CompletedPost = ({ plantName, metrics }) => {
   );
 };
 
-export default CompletedPost;
-
+export default FavoritesPost;
