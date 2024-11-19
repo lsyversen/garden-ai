@@ -22,8 +22,8 @@ const NavBar = () => {
             <div className="menu">
             <Link className='link' to="/">Home</Link>
             <Link className='link' to="/history">History</Link>
-            <Link className='link' to="/learn">Learn</Link>
             <Link className='link' to="/favorites">Favorites</Link>
+            <Link className='link' to="/learn">Learn</Link>
             {user? <div className='link'><div className='d-flex'><img className='logo' src={user.photoURL} alt={user.displayName} />
             <button onClick={logOut}>Sign Out</button>
             </div>
