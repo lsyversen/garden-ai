@@ -1,4 +1,5 @@
 import React from 'react';
+import PlantQuiz from './PlantQuiz';
 
 const LearnMore = () => {
 
@@ -51,6 +52,12 @@ const LearnMore = () => {
           <div>
             <h2 className="font-semibold text-[24px] text-[#444444]">Sunlight Requirements</h2>
             <p className="text-gray-600 mt-2">The type of sunlight required (e.g., "Full sun") guides how much direct sunlight the plant should receive daily for optimal growth.</p>
+          </div>
+
+          <div className="mt-10">
+            <h2 className="font-semibold text-[24px] text-[#444444]">Test Your Knowledge</h2>
+            <p className="text-gray-600 mt-2 mb-4">Take our plant quiz to test what you've learned!</p>
+            <PlantQuiz /> {/* Render the PlantQuiz component */}
           </div>
         </div>
       </div>
