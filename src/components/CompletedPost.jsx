@@ -17,10 +17,10 @@ const getImageForMetric = (metric) => {
     "Seed Spacing": "/images/SeedSpacing.png",
     "Time to Plant": "/images/TimeToHarvestTwo.png",
   };
-  return metricToImageMap[metric] || "/images/logo.png";
+  return metricToImageMap[metric] || "/images/default.png";
 };
 
-const CompletedPost = ({ plantName, metrics }) => {
+const CompletedPost = ({ plantName, metrics, pixabayImage }) => {
   const [user] = useAuthState(Auth);
   const [isFavorited, setIsFavorited] = useState(false);
   const hasMounted = useRef(false);
@@ -62,6 +62,7 @@ const CompletedPost = ({ plantName, metrics }) => {
             plantName: plantName,
             metric: metric,
             value: value,
+            pixabayImage: pixabayImage,
             createdAt: new Date(),
           });
         }
@@ -109,14 +110,30 @@ const CompletedPost = ({ plantName, metrics }) => {
   };
 
   return (
-    <div className="completed-post rounded-xl shadow-card hover:shadow-cardhover p-4 bg-white mb-4">
+    <div className="completed-post rounded-xl shadow-md hover:shadow-lg p-4 bg-white mb-4">
       <Toaster position="top-right" reverseOrder={false} />
       <div className="header flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <img src="/images/logo.png" alt="Plant Logo" className="w-12 h-12 object-cover rounded-full mr-4" />
+          {/* Pixabay Image */}
+          <img
+            src={pixabayImage}
+            alt={plantName}
+            className="object-cover rounded-lg mr-4"
+            style={{ width: "85px", height: "85px" }}
+          />
           <h2 className="text-xl font-semibold text-gray-800">{plantName}</h2>
         </div>
         <div className="flex items-center">
+          {/* Buy Now Button */}
+          <a
+            href={`https://www.google.com/search?q=${encodeURIComponent(plantName)}+buy+now`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-green-500 text-white py-1 px-3 rounded-lg text-sm hover:bg-green-600 mr-2"
+          >
+            Buy Now
+          </a>
+          {/* Favorite Button */}
           <button
             onClick={toggleFavorite}
             className={`mr-2 ${isFavorited ? 'text-red-500' : 'text-gray-400'} focus:outline-none`}
@@ -124,14 +141,6 @@ const CompletedPost = ({ plantName, metrics }) => {
           >
             <FaHeart size={24} />
           </button>
-          <a
-            href={`https://www.google.com/search?q=buy+${encodeURIComponent(plantName)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="buy-now-button bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600"
-          >
-            Buy Now
-          </a>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
@@ -152,4 +161,3 @@ const CompletedPost = ({ plantName, metrics }) => {
 };
 
 export default CompletedPost;
-

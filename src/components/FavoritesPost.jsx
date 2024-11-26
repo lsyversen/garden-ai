@@ -4,8 +4,8 @@ import { Auth, db } from '../firebase-config';
 import { doc, setDoc, getDocs, collection, query, where, deleteDoc } from 'firebase/firestore';
 import MetricPost from './MetricPost';
 import { FaHeart } from 'react-icons/fa';
-import { Toaster } from 'react-hot-toast';
- 
+import toast, { Toaster } from 'react-hot-toast';
+
 const getImageForMetric = (metric) => {
   const metricToImageMap = {
     "Seed Germination Rate": "/images/SeedGerminationRate.png",
@@ -20,7 +20,7 @@ const getImageForMetric = (metric) => {
   return metricToImageMap[metric] || "/images/default.png";
 };
 
-const FavoritesPost = ({ plantName, metrics, refetch }) => {
+const FavoritesPost = ({ plantName, metrics, pixabayImage }) => {
   const [user] = useAuthState(Auth);
   const [isFavorited, setIsFavorited] = useState(false);
   const hasMounted = useRef(false);
@@ -62,14 +62,18 @@ const FavoritesPost = ({ plantName, metrics, refetch }) => {
             plantName: plantName,
             metric: metric,
             value: value,
+            pixabayImage: pixabayImage,
             createdAt: new Date(),
           });
         }
         setIsFavorited(true);
+        toast.success(`${plantName} has been added to your favorites!`);
       } catch (error) {
         console.error("Error adding to favorites:", error);
+        toast.error("There was an error adding to favorites.");
       }
     } else {
+      toast('Please log in to add favorites.');
     }
   };
 
@@ -89,9 +93,10 @@ const FavoritesPost = ({ plantName, metrics, refetch }) => {
         await Promise.all(deletePromises);
 
         setIsFavorited(false);
-        refetch()
+        toast.success(`${plantName} has been removed from your favorites.`);
       } catch (error) {
         console.error("Error removing from favorites:", error);
+        toast.error("There was an error removing from favorites.");
       }
     }
   };
@@ -105,14 +110,23 @@ const FavoritesPost = ({ plantName, metrics, refetch }) => {
   };
 
   return (
-    <div className="completed-post rounded-xl shadow-card hover:shadow-cardhover p-4 bg-white mb-4">
+    <div className="completed-post rounded-xl shadow-md hover:shadow-lg p-4 bg-white mb-4">
       <Toaster position="top-right" reverseOrder={false} />
       <div className="header flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <img src="/images/logo.png" alt="Plant Logo" className="w-12 h-12 object-cover rounded-full mr-4" />
+          {/* Pixabay Image */}
+          {pixabayImage && (
+           <img
+           src={pixabayImage}
+           alt={plantName}
+           className="object-cover rounded-lg mr-4"
+           style={{ width: "85px", height: "85px" }}
+         />
+          )}
           <h2 className="text-xl font-semibold text-gray-800">{plantName}</h2>
         </div>
         <div className="flex items-center">
+          {/* Favorite Button */}
           <button
             onClick={toggleFavorite}
             className={`mr-2 ${isFavorited ? 'text-red-500' : 'text-gray-400'} focus:outline-none`}
@@ -140,3 +154,4 @@ const FavoritesPost = ({ plantName, metrics, refetch }) => {
 };
 
 export default FavoritesPost;
+

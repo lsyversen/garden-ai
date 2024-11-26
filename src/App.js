@@ -6,7 +6,6 @@ import Login from './components/Login'
 import Navbar from './components/NavBar'
 import LearnMore from './components/LearnMore'
 import Favorites from './components/Favorites'
-import History from './components/History'
 
 const App = () => {
   return (

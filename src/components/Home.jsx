@@ -30,7 +30,7 @@ const Home = () => {
           const plant = doc.data();
           const plantName = plant.plantName;
           if (!acc[plantName]) {
-            acc[plantName] = { plantName, metrics: {} };
+            acc[plantName] = { plantName, metrics: {}, imageUrl: plant.imageUrl };
           }
           acc[plantName].metrics[plant.metric] = plant.value;
           return acc;
@@ -48,7 +48,7 @@ const Home = () => {
   }, [user]);
 
   return (
-    <section className="max-w-7xl mx-30px-auto">
+    <section className="max-w-7xl mx-auto px-4">
       <div>
         <h1 className="font-extrabold text-[#222328] text-[32px]">History</h1>
       </div>
@@ -74,11 +74,21 @@ const Home = () => {
                 <div className="grid lg:grid-cols-2 sm:grid-cols-2 xs:grid-cols-1 grid-cols-1 gap-6">
                   {searchText && searchedResults ? (
                     searchedResults.map((plant) => (
-                      <CompletedPost key={plant.plantName} plantName={plant.plantName} metrics={plant.metrics} />
+                      <CompletedPost
+                        key={plant.plantName}
+                        plantName={plant.plantName}
+                        metrics={plant.metrics}
+                        pixabayImage={plant.imageUrl}
+                      />
                     ))
                   ) : (
                     plants.map((plant) => (
-                      <CompletedPost key={plant.plantName} plantName={plant.plantName} metrics={plant.metrics} />
+                      <CompletedPost
+                        key={plant.plantName}
+                        plantName={plant.plantName}
+                        metrics={plant.metrics}
+                        pixabayImage={plant.imageUrl}
+                      />
                     ))
                   )}
                 </div>

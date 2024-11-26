@@ -11,12 +11,13 @@ const PlantSearchForm = () => {
   const [loading, setLoading] = useState(false);
   const [plantInfo, setPlantInfo] = useState(null);
   const [plantName, setPlantName] = useState("");
+  const [imageUrl, setImageUrl] = useState(null);
   const [user] = useAuthState(Auth);
   const plantRef = collection(db, "plants");
 
-  const API_KEY = "API KEY HERE";
+  const OPENAI_API_KEY = "OPEN AI KEY";
+  const PIXABAY_API_KEY = "PIXABAY KEY";
 
-  // Function to get the image path based on the metric name
   const getImageForMetric = (metric) => {
     const metricToImageMap = {
       "Seed Germination Rate": "/images/SeedGerminationRate.png",
@@ -34,6 +35,7 @@ const PlantSearchForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
+    setImageUrl(null);
 
     const prompt = `
       You are a plant care expert. Assume you are always in Michigan. Provide detailed information for the plant "${plantName}" in JSON format. Please follow the exact JSON structure specified below and do not include any additional text, explanations, or commentary—only the JSON.
@@ -62,7 +64,8 @@ const PlantSearchForm = () => {
     `;
 
     try {
-      const response = await axios.post(
+      // Fetch plant data from OpenAI
+      const openAiResponse = await axios.post(
         "https://api.openai.com/v1/chat/completions",
         {
           model: "gpt-4",
@@ -76,26 +79,42 @@ const PlantSearchForm = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${API_KEY}`,
+            Authorization: `Bearer ${OPENAI_API_KEY}`,
           },
         }
       );
 
-      const data = JSON.parse(response.data.choices[0].message.content.trim());
+      const data = JSON.parse(openAiResponse.data.choices[0].message.content.trim());
       setPlantInfo(data);
 
-      await savePlantInfo(data);
+      // Fetch plant image from Pixabay
+      const pixabayResponse = await axios.get("https://pixabay.com/api/", {
+        params: {
+          key: PIXABAY_API_KEY,
+          q: plantName,
+          image_type: "photo",
+          safesearch: "true",
+        },
+      });
+
+      const pixabayImage = pixabayResponse.data.hits.length > 0
+        ? pixabayResponse.data.hits[0].webformatURL
+        : null;
+
+      setImageUrl(pixabayImage);
+
+      // Save plant info and image to Firestore
+      await savePlantInfo(data, pixabayImage);
 
     } catch (error) {
-      console.error("Error fetching plant data:", error);
-      setPlantInfo({ error: "Unable to retrieve plant information at this time." });
+      console.error("Error fetching plant data or image:", error);
+      setPlantInfo({ error: "Unable to retrieve plant information or image at this time." });
     } finally {
       setLoading(false);
     }
   };
 
-  // Function to save each metric in plantInfo as a separate document in Firestore
-  const savePlantInfo = async (info) => {
+  const savePlantInfo = async (info, image) => {
     if (!info || !user) return;
 
     try {
@@ -105,6 +124,7 @@ const PlantSearchForm = () => {
           plantName: plantName,
           metric: metric,
           value: value,
+          imageUrl: image, // Save image URL to Firestore
           createdAt: new Date(),
         });
       }
@@ -118,7 +138,7 @@ const PlantSearchForm = () => {
     <div className="plantSearch">
       <div>
         <h1 className="font-extrabold text-[#222328] text-[32px]">Search Plants</h1>
-        <p className="mt-2 text-[#666e75] text-[14px] max-w-[500px]">Powered by the latest GPT technology!</p>
+        <p className="mt-2 text-[#666e75] text-[14px] max-w-[500px]">Powered by GPT and Pixabay!</p>
       </div>
       <form className="generate-form mt-2" onSubmit={handleSubmit}>
         <input
@@ -127,17 +147,27 @@ const PlantSearchForm = () => {
           placeholder="Enter plant name..."
           value={plantName}
           onChange={(e) => setPlantName(e.target.value)}
+          className="border rounded p-2 w-full"
         />
-        <button type="submit" className="button">Search</button>
+        <button type="submit" className="button mt-2 bg-green-500 text-white py-2 px-4 rounded">Search</button>
       </form>
       {loading && <div className="loading"><CircularIndeterminate /></div>}
+      {imageUrl && (
+        <div className="image-container mt-6">
+          <img
+            src={imageUrl}
+            alt={plantName}
+            className="w-80 h-auto object-cover mx-auto rounded-lg shadow-md"
+          />
+        </div>
+      )}
       {plantInfo && (
-        <div className="plant-info">
+        <div className="plant-info mt-6">
           {Object.entries(plantInfo).map(([metric, value]) => (
             <GeneratedPost
               key={metric}
               post={{
-                logo: getImageForMetric(metric), // Use the image based on metric
+                logo: getImageForMetric(metric), 
                 response: value,
                 prompt: metric,
                 user: user ? user.displayName : "Anonymous",
