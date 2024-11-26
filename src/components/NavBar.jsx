@@ -17,7 +17,7 @@ const NavBar = () => {
         <header>
             <div className="header flex items-center mb-4">
             <img src="/images/icon.png" alt="Plant Logo" className="w-12 h-12 object-cover rounded-full mr-4" />
-            <h3>AI Garden</h3>
+            <h3>Michigan Gardens</h3>
             </div>
             <div className="menu">
             <Link className='link' to="/">Home</Link>

@@ -6,6 +6,7 @@ import { addDoc, collection } from "firebase/firestore";
 import { CircularIndeterminate } from "../loadanimation";
 import { Auth } from '../firebase-config';
 import { useAuthState } from "react-firebase-hooks/auth";
+import { FaHeart } from 'react-icons/fa';
 
 const PlantSearchForm = () => {
   const [loading, setLoading] = useState(false);
@@ -14,9 +15,10 @@ const PlantSearchForm = () => {
   const [imageUrl, setImageUrl] = useState(null);
   const [user] = useAuthState(Auth);
   const plantRef = collection(db, "plants");
+  const [isFavorited, setIsFavorited] = useState(false);
 
-  const OPENAI_API_KEY = "OPEN AI KEY";
-  const PIXABAY_API_KEY = "PIXABAY KEY";
+  const OPENAI_API_KEY = "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";
+  const PIXABAY_API_KEY = "47156218-2fb2f621ef63c3c23fe207a97";
 
   const getImageForMetric = (metric) => {
     const metricToImageMap = {
@@ -30,6 +32,10 @@ const PlantSearchForm = () => {
       "Time to Plant": "/images/TimeToHarvestTwo.png",
     };
     return metricToImageMap[metric] || "/images/logo.png"; 
+  };
+
+  const toggleFavorite = () => {
+    setIsFavorited(!isFavorited);
   };
 
   const handleSubmit = async (event) => {
@@ -103,9 +109,6 @@ const PlantSearchForm = () => {
 
       setImageUrl(pixabayImage);
 
-      // Save plant info and image to Firestore
-      await savePlantInfo(data, pixabayImage);
-
     } catch (error) {
       console.error("Error fetching plant data or image:", error);
       setPlantInfo({ error: "Unable to retrieve plant information or image at this time." });
@@ -114,31 +117,11 @@ const PlantSearchForm = () => {
     }
   };
 
-  const savePlantInfo = async (info, image) => {
-    if (!info || !user) return;
-
-    try {
-      for (const [metric, value] of Object.entries(info)) {
-        await addDoc(plantRef, {
-          userId: user.uid,
-          plantName: plantName,
-          metric: metric,
-          value: value,
-          imageUrl: image, // Save image URL to Firestore
-          createdAt: new Date(),
-        });
-      }
-    } catch (error) {
-      console.error("Error saving plant data:", error);
-      alert("Failed to save plant information.");
-    }
-  };
-
   return (
     <div className="plantSearch">
       <div>
         <h1 className="font-extrabold text-[#222328] text-[32px]">Search Plants</h1>
-        <p className="mt-2 text-[#666e75] text-[14px] max-w-[500px]">Powered by GPT and Pixabay!</p>
+        <p className="mt-2 text-[#666e75] text-[14px] max-w-[500px]">Powered by latest GPT technology!</p>
       </div>
       <form className="generate-form mt-2" onSubmit={handleSubmit}>
         <input
@@ -153,12 +136,32 @@ const PlantSearchForm = () => {
       </form>
       {loading && <div className="loading"><CircularIndeterminate /></div>}
       {imageUrl && (
-        <div className="image-container mt-6">
+        <div className="flex justify-center items-center mt-6">
+          {/* Image */}
           <img
             src={imageUrl}
             alt={plantName}
-            className="w-80 h-auto object-cover mx-auto rounded-lg shadow-md"
+            className="w-80 h-auto object-cover rounded-lg shadow-md"
           />
+          {/* Icons */}
+          <div className="ml-4 flex flex-col items-center space-y-2">
+            {/* Favorite Button */}
+            <button
+              onClick={toggleFavorite}
+              className={`p-2 ${isFavorited ? "text-red-500" : "text-gray-400"} hover:scale-110 transition-transform`}
+            >
+              <FaHeart size={24} />
+            </button>
+            {/* Buy Now Button */}
+            <a
+              href={`https://www.google.com/search?q=${encodeURIComponent(plantName)}+buy+now`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-green-500 text-white py-2 px-4 rounded-lg text-sm hover:bg-green-600"
+            >
+              Buy Now
+            </a>
+          </div>
         </div>
       )}
       {plantInfo && (
