@@ -17,8 +17,8 @@ const PlantSearchForm = () => {
   const plantRef = collection(db, "plants");
   const [isFavorited, setIsFavorited] = useState(false);
 
-  const OPENAI_API_KEY = "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";
-  const PIXABAY_API_KEY = "47156218-2fb2f621ef63c3c23fe207a97";
+  const OPENAI_API_KEY = "";
+  const PIXABAY_API_KEY = "";
 
   const getImageForMetric = (metric) => {
     const metricToImageMap = {
