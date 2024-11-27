@@ -4,6 +4,7 @@ import { db, Auth } from '../firebase-config';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import FavoritesPost from './FavoritesPost';
 import { CircularIndeterminate } from "../loadanimation";
+import { Toaster } from 'react-hot-toast';
 
 const Favorites = () => {
   const [favoritePlants, setFavoritePlants] = useState([]);
@@ -13,14 +14,12 @@ const Favorites = () => {
   const refetchFavoritePlants = useCallback(async () => {
     setLoading(true);
     try {
-      // Query to get favorites only for the logged-in user
       const favoritesQuery = query(
         collection(db, "favorites"),
         where("userId", "==", user.uid)
       );
       const data = await getDocs(favoritesQuery);
 
-      // Group metrics by plant name for display, including pixabayImage
       const plantEntries = data.docs.reduce((acc, doc) => {
         const favorite = doc.data();
         if (!acc[favorite.plantName]) {
@@ -53,6 +52,7 @@ const Favorites = () => {
 
   return (
     <section className="max-w-7xl mx-auto px-6 py-8">
+     <Toaster position="top-right" reverseOrder={false} />
       <div>
         <h1 className="font-extrabold text-[#222328] text-[32px]">Favorites</h1>
       </div>
@@ -76,7 +76,7 @@ const Favorites = () => {
                     plantName={plant.plantName}
                     metrics={plant.metrics}
                     pixabayImage={plant.imageUrl} // Pass pixabayImage
-                    refetch={refetchFavoritePlants}
+                    refetch={refetchFavoritePlants} // Pass refetch function to FavoritesPost
                   />
                 ))}
               </div>
@@ -89,3 +89,4 @@ const Favorites = () => {
 };
 
 export default Favorites;
+

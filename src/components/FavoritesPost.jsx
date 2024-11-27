@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { Auth, db } from '../firebase-config';
-import { doc, setDoc, getDocs, collection, query, where, deleteDoc } from 'firebase/firestore';
-import MetricPost from './MetricPost';
+import { Auth } from '../firebase-config';
 import { FaHeart } from 'react-icons/fa';
 import toast, { Toaster } from 'react-hot-toast';
+import { addToFavorites, removeFromFavorites, isPlantFavorited } from '../utils/favorites';
+import MetricPost from './MetricPost';
 
 const getImageForMetric = (metric) => {
   const metricToImageMap = {
@@ -20,93 +20,34 @@ const getImageForMetric = (metric) => {
   return metricToImageMap[metric] || "/images/default.png";
 };
 
-const FavoritesPost = ({ plantName, metrics, pixabayImage }) => {
+const FavoritesPost = ({ plantName, metrics, pixabayImage, refetch }) => {
   const [user] = useAuthState(Auth);
   const [isFavorited, setIsFavorited] = useState(false);
-  const hasMounted = useRef(false);
 
   useEffect(() => {
-    hasMounted.current = true;
-
-    const checkIfFavorited = async () => {
+    const checkFavoriteStatus = async () => {
       if (user) {
-        try {
-          const favoritesQuery = query(
-            collection(db, 'favorites'),
-            where('userId', '==', user.uid),
-            where('plantName', '==', plantName)
-          );
-          const querySnapshot = await getDocs(favoritesQuery);
-          if (!querySnapshot.empty) {
-            setIsFavorited(true);
-          }
-        } catch (error) {
-          console.error("Error checking favorites:", error);
-        }
+        const favorited = await isPlantFavorited(user.uid, plantName);
+        setIsFavorited(favorited);
       }
     };
-    checkIfFavorited();
 
-    return () => {
-      hasMounted.current = false;
-    };
+    checkFavoriteStatus();
   }, [user, plantName]);
 
-  const handleAddToFavorites = async () => {
-    if (user && hasMounted.current) {
-      try {
-        for (const [metric, value] of Object.entries(metrics)) {
-          const favoriteRef = doc(db, 'favorites', `${user.uid}_${plantName}_${metric}`);
-          await setDoc(favoriteRef, {
-            userId: user.uid,
-            plantName: plantName,
-            metric: metric,
-            value: value,
-            pixabayImage: pixabayImage,
-            createdAt: new Date(),
-          });
-        }
-        setIsFavorited(true);
-        toast.success(`${plantName} has been added to your favorites!`);
-      } catch (error) {
-        console.error("Error adding to favorites:", error);
-        toast.error("There was an error adding to favorites.");
-      }
-    } else {
-      toast('Please log in to add favorites.');
-    }
-  };
-
-  const handleRemoveFromFavorites = async () => {
-    if (user && hasMounted.current) {
-      try {
-        const favoritesQuery = query(
-          collection(db, 'favorites'),
-          where('userId', '==', user.uid),
-          where('plantName', '==', plantName)
-        );
-        const querySnapshot = await getDocs(favoritesQuery);
-
-        const deletePromises = querySnapshot.docs.map((docSnapshot) =>
-          deleteDoc(doc(db, 'favorites', docSnapshot.id))
-        );
-        await Promise.all(deletePromises);
-
-        setIsFavorited(false);
-        toast.success(`${plantName} has been removed from your favorites.`);
-      } catch (error) {
-        console.error("Error removing from favorites:", error);
-        toast.error("There was an error removing from favorites.");
-      }
-    }
-  };
-
   const toggleFavorite = async () => {
-    if (isFavorited) {
-      await handleRemoveFromFavorites();
-    } else {
-      await handleAddToFavorites();
+    if (!user) {
+      toast('Please log in to manage favorites.');
+      return;
     }
+
+    if (isFavorited) {
+      await removeFromFavorites(user.uid, plantName);
+      refetch(); // Refresh the favorites list after removing
+    } else {
+      await addToFavorites(user.uid, plantName, metrics, pixabayImage);
+    }
+    setIsFavorited(!isFavorited);
   };
 
   return (
@@ -114,19 +55,17 @@ const FavoritesPost = ({ plantName, metrics, pixabayImage }) => {
       <Toaster position="top-right" reverseOrder={false} />
       <div className="header flex items-center justify-between mb-4">
         <div className="flex items-center">
-          {/* Pixabay Image */}
           {pixabayImage && (
-           <img
-           src={pixabayImage}
-           alt={plantName}
-           className="object-cover rounded-lg mr-4"
-           style={{ width: "85px", height: "85px" }}
-         />
+            <img
+              src={pixabayImage}
+              alt={plantName}
+              className="object-cover rounded-lg mr-4"
+              style={{ width: '85px', height: '85px' }}
+            />
           )}
           <h2 className="text-xl font-semibold text-gray-800">{plantName}</h2>
         </div>
         <div className="flex items-center">
-          {/* Favorite Button */}
           <button
             onClick={toggleFavorite}
             className={`mr-2 ${isFavorited ? 'text-red-500' : 'text-gray-400'} focus:outline-none`}
@@ -144,7 +83,7 @@ const FavoritesPost = ({ plantName, metrics, pixabayImage }) => {
               logo: getImageForMetric(metric),
               response: value,
               prompt: metric,
-              user: "",
+              user: '',
             }}
           />
         ))}
@@ -154,4 +93,6 @@ const FavoritesPost = ({ plantName, metrics, pixabayImage }) => {
 };
 
 export default FavoritesPost;
+
+
 

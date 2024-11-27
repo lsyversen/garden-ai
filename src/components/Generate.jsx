@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import GeneratedPost from "./GeneratedPost";
 import { db } from "../firebase-config";
@@ -7,6 +7,22 @@ import { CircularIndeterminate } from "../loadanimation";
 import { Auth } from '../firebase-config';
 import { useAuthState } from "react-firebase-hooks/auth";
 import { FaHeart } from 'react-icons/fa';
+import { addToFavorites, removeFromFavorites, isPlantFavorited } from '../utils/favorites';
+import { Toaster } from 'react-hot-toast';
+
+const getImageForMetric = (metric) => {
+  const metricToImageMap = {
+    "Seed Germination Rate": "/images/SeedGerminationRate.png",
+    "Growing Zone": "/images/GrowingZone.png",
+    "Time to Harvest": "/images/TimeToHarvest.png",
+    "Watering Rate": "/images/WateringRate.png",
+    "Depth to Plant": "/images/DepthToPlant.png",
+    "Sunlight Requirements": "/images/SunlightRequirements.png",
+    "Seed Spacing": "/images/SeedSpacing.png",
+    "Time to Plant": "/images/TimeToHarvestTwo.png",
+  };
+  return metricToImageMap[metric] || "/images/default.png";
+};
 
 const PlantSearchForm = () => {
   const [loading, setLoading] = useState(false);
@@ -17,25 +33,45 @@ const PlantSearchForm = () => {
   const plantRef = collection(db, "plants");
   const [isFavorited, setIsFavorited] = useState(false);
 
-  const OPENAI_API_KEY = "";
-  const PIXABAY_API_KEY = "";
+  const OPENAI_API_KEY = "Open AI KEY ";
+  const PIXABAY_API_KEY = "PIXABAY KEY";
 
-  const getImageForMetric = (metric) => {
-    const metricToImageMap = {
-      "Seed Germination Rate": "/images/SeedGerminationRate.png",
-      "Growing Zone": "/images/GrowingZone.png",
-      "Time to Harvest": "/images/TimeToHarvest.png",
-      "Watering Rate": "/images/WateringRate.png",
-      "Depth to Plant": "/images/DepthToPlant.png",
-      "Sunlight Requirements": "/images/SunlightRequirements.png",
-      "Seed Spacing": "/images/SeedSpacing.png",
-      "Time to Plant": "/images/TimeToHarvestTwo.png",
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      if (user && plantName) {
+        const favorited = await isPlantFavorited(user.uid, plantName);
+        setIsFavorited(favorited);
+      }
     };
-    return metricToImageMap[metric] || "/images/logo.png"; 
+
+    checkFavoriteStatus();
+  }, [user, plantName]);
+
+  const handleAddToFavorites = async () => {
+    if (user) {
+      await addToFavorites(user.uid, plantName, plantInfo, imageUrl);
+      setIsFavorited(true);
+    }
   };
 
-  const toggleFavorite = () => {
-    setIsFavorited(!isFavorited);
+  const handleRemoveFromFavorites = async () => {
+    if (user) {
+      await removeFromFavorites(user.uid, plantName);
+      setIsFavorited(false);
+    }
+  };
+
+  const toggleFavorite = async () => {
+    if (!user) {
+      alert("Please log in to manage favorites.");
+      return;
+    }
+
+    if (isFavorited) {
+      await handleRemoveFromFavorites();
+    } else {
+      await handleAddToFavorites();
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -109,6 +145,19 @@ const PlantSearchForm = () => {
 
       setImageUrl(pixabayImage);
 
+      // Save plant and metrics to Firestore for history
+      if (user) {
+        for (const [metric, value] of Object.entries(data)) {
+          await addDoc(plantRef, {
+            userId: user.uid,
+            plantName,
+            metric,
+            value,
+            imageUrl: pixabayImage,
+            createdAt: new Date(),
+          });
+        }
+      }
     } catch (error) {
       console.error("Error fetching plant data or image:", error);
       setPlantInfo({ error: "Unable to retrieve plant information or image at this time." });
@@ -119,6 +168,7 @@ const PlantSearchForm = () => {
 
   return (
     <div className="plantSearch">
+      <Toaster position="top-right" reverseOrder={false} />
       <div>
         <h1 className="font-extrabold text-[#222328] text-[32px]">Search Plants</h1>
         <p className="mt-2 text-[#666e75] text-[14px] max-w-[500px]">Powered by latest GPT technology!</p>
@@ -170,7 +220,7 @@ const PlantSearchForm = () => {
             <GeneratedPost
               key={metric}
               post={{
-                logo: getImageForMetric(metric), 
+                logo: getImageForMetric(metric),
                 response: value,
                 prompt: metric,
                 user: user ? user.displayName : "Anonymous",
@@ -184,3 +234,5 @@ const PlantSearchForm = () => {
 };
 
 export default PlantSearchForm;
+
+
