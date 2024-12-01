@@ -33,8 +33,8 @@ const PlantSearchForm = () => {
   const plantRef = collection(db, "plants");
   const [isFavorited, setIsFavorited] = useState(false);
 
-  const OPENAI_API_KEY = "Open AI KEY ";
-  const PIXABAY_API_KEY = "PIXABAY KEY";
+  const OPENAI_API_KEY = process.env.REACT_APP_OPENAI_API_KEY;
+  const PIXABAY_API_KEY = process.env.REACT_APP_PIXABAY_API_KEY;  
 
   useEffect(() => {
     const checkFavoriteStatus = async () => {
@@ -165,7 +165,7 @@ const PlantSearchForm = () => {
       setLoading(false);
     }
   };
-
+  
   return (
     <div className="plantSearch">
       <Toaster position="top-right" reverseOrder={false} />
