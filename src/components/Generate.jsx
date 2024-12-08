@@ -234,5 +234,3 @@ const PlantSearchForm = () => {
 };
 
 export default PlantSearchForm;
-
-
