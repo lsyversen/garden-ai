@@ -136,7 +136,7 @@ const PlantQuiz = () => {
         <div className="result mt-6 text-center">
           <p>You scored {score} out of {questions.length}.</p>
           <p className={score / questions.length >= 0.8 ? "congratulations text-green-600" : "try-again text-red-600"}>
-            {score / questions.length >= 0.8 ? "Congratulations! You passed!" : "Try again to improve your score."}
+            {score / questions.length >= 0.8 ? "Congratulations! You passed! You're off to great gardening!" : "Review the recommended articles to improve your score and overall gardening knowledge."}
           </p>
         </div>
       )}

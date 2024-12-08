@@ -33,6 +33,8 @@ const PlantSearchForm = () => {
   const plantRef = collection(db, "plants");
   const [isFavorited, setIsFavorited] = useState(false);
 
+  const cache = {}; // In-memory cache for Pixabay API
+
   const OPENAI_API_KEY = process.env.REACT_APP_OPENAI_API_KEY;
   const PIXABAY_API_KEY = process.env.REACT_APP_PIXABAY_API_KEY;  
 
@@ -76,22 +78,19 @@ const PlantSearchForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    // Validation: Check if plant name is empty
+    if (!plantName.trim()) {
+      setPlantInfo({ error: "Please enter a plant name to complete the search." });
+      return;
+    }
+
     setLoading(true);
     setImageUrl(null);
 
     const prompt = `
       You are a plant care expert. Assume you are always in Michigan. Provide detailed information for the plant "${plantName}" in JSON format. Please follow the exact JSON structure specified below and do not include any additional text, explanations, or commentary—only the JSON.
-
-      Metric Descriptions:
-      - Seed Germination Rate: Time in weeks or days.
-      - Growing Zone: USDA Zone number.
-      - Time to Harvest: Time in weeks or days.
-      - Time to Plant: Time in weeks or days.
-      - Watering Rate: Frequency (e.g., "Weekly").
-      - Depth to Plant: Depth in inches or cm.
-      - Seed Spacing: Depth in inches or cm.
-      - Sunlight Requirements: Type (e.g., "Full sun").
-
+      
       JSON format:
       {
           "Seed Germination Rate": "Rate in weeks or days",
@@ -106,7 +105,6 @@ const PlantSearchForm = () => {
     `;
 
     try {
-      // Fetch plant data from OpenAI
       const openAiResponse = await axios.post(
         "https://api.openai.com/v1/chat/completions",
         {
@@ -129,23 +127,26 @@ const PlantSearchForm = () => {
       const data = JSON.parse(openAiResponse.data.choices[0].message.content.trim());
       setPlantInfo(data);
 
-      // Fetch plant image from Pixabay
-      const pixabayResponse = await axios.get("https://pixabay.com/api/", {
-        params: {
-          key: PIXABAY_API_KEY,
-          q: plantName,
-          image_type: "photo",
-          safesearch: "true",
-        },
-      });
+      if (cache[plantName]) {
+        setImageUrl(cache[plantName]);
+      } else {
+        const pixabayResponse = await axios.get("https://pixabay.com/api/", {
+          params: {
+            key: PIXABAY_API_KEY,
+            q: plantName,
+            image_type: "photo",
+            safesearch: "true",
+          },
+        });
 
-      const pixabayImage = pixabayResponse.data.hits.length > 0
-        ? pixabayResponse.data.hits[0].webformatURL
-        : null;
+        const pixabayImage = pixabayResponse.data.hits.length > 0
+          ? pixabayResponse.data.hits[0].webformatURL
+          : null;
 
-      setImageUrl(pixabayImage);
+        cache[plantName] = pixabayImage;
+        setImageUrl(pixabayImage);
+      }
 
-      // Save plant and metrics to Firestore for history
       if (user) {
         for (const [metric, value] of Object.entries(data)) {
           await addDoc(plantRef, {
@@ -153,7 +154,7 @@ const PlantSearchForm = () => {
             plantName,
             metric,
             value,
-            imageUrl: pixabayImage,
+            imageUrl: cache[plantName],
             createdAt: new Date(),
           });
         }
@@ -165,7 +166,7 @@ const PlantSearchForm = () => {
       setLoading(false);
     }
   };
-  
+
   return (
     <div className="plantSearch">
       <Toaster position="top-right" reverseOrder={false} />
@@ -185,24 +186,23 @@ const PlantSearchForm = () => {
         <button type="submit" className="button mt-2 bg-green-500 text-white py-2 px-4 rounded">Search</button>
       </form>
       {loading && <div className="loading"><CircularIndeterminate /></div>}
+      {plantInfo && plantInfo.error && (
+        <p className="error-message text-red-500 mt-2">{plantInfo.error}</p>
+      )}
       {imageUrl && (
         <div className="flex justify-center items-center mt-6">
-          {/* Image */}
           <img
             src={imageUrl}
             alt={plantName}
             className="w-80 h-auto object-cover rounded-lg shadow-md"
           />
-          {/* Icons */}
           <div className="ml-4 flex flex-col items-center space-y-2">
-            {/* Favorite Button */}
             <button
               onClick={toggleFavorite}
               className={`p-2 ${isFavorited ? "text-red-500" : "text-gray-400"} hover:scale-110 transition-transform`}
             >
               <FaHeart size={24} />
             </button>
-            {/* Buy Now Button */}
             <a
               href={`https://www.google.com/search?q=${encodeURIComponent(plantName)}+buy+now`}
               target="_blank"
@@ -211,10 +211,13 @@ const PlantSearchForm = () => {
             >
               Buy Now
             </a>
+            <p className="text-gray-400 text-xs mt-1">
+              Images provided by <a href="https://pixabay.com" target="_blank" rel="noopener noreferrer" className="text-blue-400">Pixabay</a>
+            </p>
           </div>
         </div>
       )}
-      {plantInfo && (
+      {plantInfo && !plantInfo.error && (
         <div className="plant-info mt-6">
           {Object.entries(plantInfo).map(([metric, value]) => (
             <GeneratedPost

@@ -45,7 +45,7 @@ const LearnMore = () => {
 
           <div>
             <h2 className="font-semibold text-[24px] text-[#444444]">Depth to Plant</h2>
-            <p className="text-gray-600 mt-2">The depth, usually in inches or cm, indicates how deep to plant seeds. Proper planting depth promotes root growth and seedling stability.</p>
+            <p className="text-gray-600 mt-2">The depth, usually in inches (in) or centimeters (cm), indicates how deep to plant seeds. Proper planting depth promotes root growth and seedling stability.</p>
           </div>
 
           <div>
