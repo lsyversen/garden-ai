@@ -1,3 +1,10 @@
+# Better MI Gardens
+
+This project is a simple-to-use web app that can help people in Michigan become better gardeners! 
+
+Users can enter the name of a plant and quickly receive key metrics about it in a simple and easy-to-follow format. The focus of the app is for anyone to use it without having to be a gardening or technology connoisseur. 
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
